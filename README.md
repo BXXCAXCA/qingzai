@@ -19,9 +19,10 @@
 - AES-256-GCM 加密服务实现（PBKDF2-HMAC-SHA256 派生密钥、随机 IV、认证标签校验、SHA-256 哈希）
 - Dio WebDAV 服务实现（HTTPS 校验、Basic Auth、PROPFIND、PUT、GET、HEAD、DELETE、MKCOL、ETag/元数据解析）
 - SyncManager 核心流程实现（本地变更识别、加密上传、远程 ETag 比较、下载解密合并、确定性冲突解析、同步元数据记录）
+- Socket LAN 传输服务实现（本机接收端口、设备扫描流、TCP 文件发送/接收、进度流、取消标记、SHA-256 校验）
 - Riverpod 服务注入入口
 - Flutter CI 工作流
-- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试与同步管理器测试
+- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试与 LAN 传输服务测试
 
 ## 计划模块
 
