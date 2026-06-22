@@ -25,7 +25,7 @@ class ClipboardItem implements SyncableModel {
     required this.deviceId,
     this.isFavorite = false,
     this.thumbnail,
-    this.lastModified,
+    DateTime? lastModified,
     this.lamportClock = 0,
     this.isDeleted = false,
   }) : lastModified = lastModified ?? timestamp {
