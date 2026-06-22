@@ -26,7 +26,9 @@ final webDavServiceProvider = Provider<WebDavService>((ref) {
 
 final lanTransferServiceProvider = Provider<LanTransferService>((ref) {
   final service = SocketLanTransferService();
-  ref.onDispose(service.dispose);
+  ref.onDispose(() {
+    unawaited(service.dispose());
+  });
   return service;
 });
 
