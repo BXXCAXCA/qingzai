@@ -1,3 +1,4 @@
+export 'aes_gcm_encryption_service.dart';
 export 'encryption_service.dart';
 export 'lan_transfer_service.dart';
 export 'platform_service.dart';
