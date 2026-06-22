@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../services/aes_gcm_encryption_service.dart';
 import '../services/encryption_service.dart';
 import '../services/lan_transfer_service.dart';
 import '../services/platform_service.dart';
@@ -13,7 +14,7 @@ final storageServiceProvider = Provider<StorageService>((ref) {
 });
 
 final encryptionServiceProvider = Provider<EncryptionService>((ref) {
-  throw UnimplementedError('EncryptionService implementation is not registered.');
+  return AesGcmEncryptionService();
 });
 
 final webDavServiceProvider = Provider<WebDavService>((ref) {
