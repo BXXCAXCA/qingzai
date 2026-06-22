@@ -38,4 +38,10 @@ class StorageBoxNames {
     pomodoro,
     memos,
   ];
+
+  static const allBoxes = [
+    ...syncableBoxes,
+    syncMeta,
+    tombstones,
+  ];
 }
