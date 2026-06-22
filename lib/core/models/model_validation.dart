@@ -14,6 +14,10 @@ void validateNonEmptyString(String value, String fieldName) {
   }
 }
 
+void validateDeviceId(String deviceId) {
+  validateNonEmptyString(deviceId, 'deviceId');
+}
+
 void validatePriority(int priority) {
   if (priority < 0 || priority > 2) {
     throw ArgumentError.value(
