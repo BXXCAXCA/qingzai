@@ -4,13 +4,18 @@
 
 ## 当前状态
 
-本仓库已初始化 Flutter 源码骨架，包含：
+本仓库已初始化 Flutter 工程化源码骨架，包含：
 
 - Material Design 3 应用入口
 - Riverpod 依赖接入
 - 首页与核心功能占位页面
 - 基础主题与深色模式
 - 分层目录结构
+- 核心异常类型
+- 可同步模型基础接口与 tombstone 占位
+- Storage / WebDAV / Encryption / LAN Transfer / Platform / Version 服务接口
+- SyncResult、SyncManager 接口与确定性冲突解析器
+- Riverpod 服务注入入口
 - Flutter CI 工作流
 - 基础 Widget 测试
 
@@ -24,6 +29,21 @@
 - WebDAV 加密同步
 - 局域网文件传输
 - 分平台更新
+
+## 目录结构
+
+```text
+lib/
+  app/                 # 应用入口、导航壳
+  core/
+    errors/            # 统一异常类型
+    models/            # 通用模型接口
+    providers/         # 全局 Riverpod Provider
+    services/          # 服务接口
+    sync/              # 同步结果与冲突解析
+    theme/             # Material 3 主题
+  features/            # 功能模块占位
+```
 
 ## 本地开发
 
