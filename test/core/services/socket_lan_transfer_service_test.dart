@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -49,7 +48,7 @@ void main() {
       await service.startDiscovery(deviceName: 'Receiver');
 
       expect(service.isRunning, isTrue);
-      expect(service.boundPort, isPositive);
+      expect(service.boundPort, greaterThan(0));
 
       await service.stopDiscovery();
 
