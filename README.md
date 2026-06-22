@@ -13,11 +13,12 @@
 - 分层目录结构
 - 核心异常类型
 - 可同步模型基础接口与 tombstone 占位
+- Todo / Clipboard / Note / Pomodoro / Memo 核心数据模型
 - Storage / WebDAV / Encryption / LAN Transfer / Platform / Version 服务接口
 - SyncResult、SyncManager 接口与确定性冲突解析器
 - Riverpod 服务注入入口
 - Flutter CI 工作流
-- 基础 Widget 测试
+- 基础 Widget 测试与模型序列化测试
 
 ## 计划模块
 
@@ -37,12 +38,19 @@ lib/
   app/                 # 应用入口、导航壳
   core/
     errors/            # 统一异常类型
-    models/            # 通用模型接口
+    models/            # 通用模型接口、校验工具、tombstone
     providers/         # 全局 Riverpod Provider
     services/          # 服务接口
     sync/              # 同步结果与冲突解析
     theme/             # Material 3 主题
-  features/            # 功能模块占位
+  features/
+    clipboard/models/  # 剪切板数据模型
+    memos/models/      # 备忘录数据模型
+    notes/models/      # 笔记数据模型
+    pomodoro/models/   # 番茄钟会话模型
+    todos/models/      # 待办事项模型
+test/
+  features/models/     # 数据模型测试
 ```
 
 ## 本地开发
