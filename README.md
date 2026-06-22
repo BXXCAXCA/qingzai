@@ -15,10 +15,11 @@
 - 可同步模型基础接口与 tombstone 占位
 - Todo / Clipboard / Note / Pomodoro / Memo 核心数据模型
 - Storage / WebDAV / Encryption / LAN Transfer / Platform / Version 服务接口
+- AES-256-GCM 加密服务实现（PBKDF2-HMAC-SHA256 派生密钥、随机 IV、认证标签校验、SHA-256 哈希）
 - SyncResult、SyncManager 接口与确定性冲突解析器
 - Riverpod 服务注入入口
 - Flutter CI 工作流
-- 基础 Widget 测试与模型序列化测试
+- 基础 Widget 测试、模型序列化测试与加密服务测试
 
 ## 计划模块
 
@@ -40,7 +41,7 @@ lib/
     errors/            # 统一异常类型
     models/            # 通用模型接口、校验工具、tombstone
     providers/         # 全局 Riverpod Provider
-    services/          # 服务接口
+    services/          # 服务接口与基础实现
     sync/              # 同步结果与冲突解析
     theme/             # Material 3 主题
   features/
@@ -50,6 +51,7 @@ lib/
     pomodoro/models/   # 番茄钟会话模型
     todos/models/      # 待办事项模型
 test/
+  core/services/       # 核心服务测试
   features/models/     # 数据模型测试
 ```
 
