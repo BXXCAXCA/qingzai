@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/aes_gcm_encryption_service.dart';
+import '../services/dio_webdav_service.dart';
 import '../services/encryption_service.dart';
 import '../services/hive_storage_service.dart';
 import '../services/lan_transfer_service.dart';
@@ -19,7 +20,7 @@ final encryptionServiceProvider = Provider<EncryptionService>((ref) {
 });
 
 final webDavServiceProvider = Provider<WebDavService>((ref) {
-  throw UnimplementedError('WebDavService implementation is not registered.');
+  return DioWebDavService();
 });
 
 final lanTransferServiceProvider = Provider<LanTransferService>((ref) {
