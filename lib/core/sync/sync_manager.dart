@@ -5,7 +5,9 @@ import '../services/webdav_service.dart';
 import 'sync_result.dart';
 
 abstract interface class SyncManager {
-  Future<SyncResult> performSync({List<String> boxNames});
+  Future<SyncResult> performSync({
+    List<String> boxNames = StorageBoxNames.syncableBoxes,
+  });
 
   SyncableModel resolveConflict(SyncableModel local, SyncableModel remote);
 }
