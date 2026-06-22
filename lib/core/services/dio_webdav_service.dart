@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 
@@ -35,7 +36,10 @@ class DioWebDavService implements WebDavService {
         method: 'PROPFIND',
         remotePath: '',
         data: _propfindAllPropertiesBody,
-        headers: const {'Depth': '0', 'Content-Type': 'application/xml; charset=utf-8'},
+        headers: const {
+          'Depth': '0',
+          'Content-Type': 'application/xml; charset=utf-8',
+        },
       );
 
       _isConnected = _isSuccessful(response.statusCode) || response.statusCode == 207;
@@ -125,7 +129,10 @@ class DioWebDavService implements WebDavService {
       method: 'PROPFIND',
       remotePath: remotePath,
       data: _propfindAllPropertiesBody,
-      headers: const {'Depth': '1', 'Content-Type': 'application/xml; charset=utf-8'},
+      headers: const {
+        'Depth': '1',
+        'Content-Type': 'application/xml; charset=utf-8',
+      },
     );
 
     if (response.statusCode != 207 && !_isSuccessful(response.statusCode)) {
@@ -292,7 +299,8 @@ class DioWebDavService implements WebDavService {
     return FileMetadata(
       path: _normalizeRemotePath(path),
       etag: _stripQuotes(headers.value('etag') ?? ''),
-      lastModified: _parseHttpDate(lastModifiedHeader) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      lastModified: _parseHttpDate(lastModifiedHeader) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       size: contentLength ?? fallbackSize ?? 0,
       isDirectory: isDirectory,
     );
@@ -387,7 +395,11 @@ class DioWebDavService implements WebDavService {
     if (value == null || value.trim().isEmpty) {
       return null;
     }
-    return HttpDate.parse(value);
+    try {
+      return HttpDate.parse(value);
+    } on FormatException {
+      return null;
+    }
   }
 }
 
