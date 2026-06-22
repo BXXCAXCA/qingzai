@@ -46,3 +46,14 @@ final syncDependenciesProvider = Provider<SyncDependencies>((ref) {
     encryption: ref.watch(encryptionServiceProvider),
   );
 });
+
+final syncManagerProvider = Provider<SyncManager>((ref) {
+  final dependencies = ref.watch(syncDependenciesProvider);
+
+  return DefaultSyncManager(
+    storage: dependencies.storage,
+    webDav: dependencies.webDav,
+    encryption: dependencies.encryption,
+    conflictResolver: ref.watch(conflictResolverProvider),
+  );
+});
