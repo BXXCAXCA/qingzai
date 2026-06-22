@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/aes_gcm_encryption_service.dart';
+import '../services/dio_version_service.dart';
 import '../services/dio_webdav_service.dart';
 import '../services/encryption_service.dart';
 import '../services/hive_storage_service.dart';
@@ -35,7 +36,7 @@ final lanTransferServiceProvider = Provider<LanTransferService>((ref) {
 });
 
 final versionServiceProvider = Provider<VersionService>((ref) {
-  throw UnimplementedError('VersionService implementation is not registered.');
+  return DioVersionService();
 });
 
 final platformServiceProvider = Provider<PlatformService>((ref) {
