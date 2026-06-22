@@ -49,8 +49,30 @@ class DefaultSyncManager implements SyncManager {
       try {
         await _ensureRemoteDirectory(boxName);
 
+        final remoteChanges = await _getRemoteChanges(boxName, metadata);
+        final conflictWinnersToUpload = <String, SyncableModel>{};
+        for (final remoteFile in remoteChanges) {
+          final outcome = await _downloadAndMergeItem(
+            boxName: boxName,
+            remotePath: remoteFile.path,
+          );
+          downloaded++;
+          metadata.setEtag(remoteFile.path, remoteFile.etag);
+
+          if (outcome.shouldUploadWinner) {
+            conflictWinnersToUpload[outcome.item.id] = outcome.item;
+          } else {
+            metadata.recordClock(boxName, outcome.item.lamportClock);
+          }
+        }
+
         final localChanges = await _getLocalChanges(boxName, metadata);
-        for (final item in localChanges) {
+        final itemsToUpload = <String, SyncableModel>{
+          for (final item in localChanges) item.id: item,
+          ...conflictWinnersToUpload,
+        }.values;
+
+        for (final item in itemsToUpload) {
           final remotePath = _remotePathFor(boxName, item.id);
           final uploadResult = await _uploadItem(
             boxName: boxName,
@@ -68,17 +90,6 @@ class DefaultSyncManager implements SyncManager {
               '${uploadResult.errorMessage ?? 'unknown error'}',
             );
           }
-        }
-
-        final remoteChanges = await _getRemoteChanges(boxName, metadata);
-        for (final remoteFile in remoteChanges) {
-          final mergedItem = await _downloadAndMergeItem(
-            boxName: boxName,
-            remotePath: remoteFile.path,
-          );
-          downloaded++;
-          metadata.setEtag(remoteFile.path, remoteFile.etag);
-          metadata.recordClock(boxName, mergedItem.lamportClock);
         }
       } catch (error) {
         errors.add('Error syncing $boxName: $error');
@@ -145,7 +156,7 @@ class DefaultSyncManager implements SyncManager {
         .toList(growable: false);
   }
 
-  Future<SyncableModel> _downloadAndMergeItem({
+  Future<_MergeOutcome> _downloadAndMergeItem({
     required String boxName,
     required String remotePath,
   }) async {
@@ -164,12 +175,18 @@ class DefaultSyncManager implements SyncManager {
       remoteItem.id,
     );
 
-    final itemToSave = existingItem == null
-        ? remoteItem
-        : _conflictResolver.resolve(existingItem, remoteItem);
+    if (existingItem == null) {
+      await _storage.saveItem<SyncableModel>(boxName, remoteItem);
+      return _MergeOutcome(item: remoteItem, shouldUploadWinner: false);
+    }
 
-    await _storage.saveItem<SyncableModel>(boxName, itemToSave);
-    return itemToSave;
+    final winner = _conflictResolver.resolve(existingItem, remoteItem);
+    await _storage.saveItem<SyncableModel>(boxName, winner);
+
+    return _MergeOutcome(
+      item: winner,
+      shouldUploadWinner: identical(winner, existingItem),
+    );
   }
 
   SyncableModel _deserializeItem(String boxName, Map<String, dynamic> json) {
@@ -208,8 +225,8 @@ class DefaultSyncManager implements SyncManager {
     return _SyncMetadata.fromStorageMap(stored);
   }
 
-  Future<void> _saveMetadata(_SyncMetadata metadata) {
-    return _storage.saveItem<Map<String, Object?>>(
+  Future<void> _saveMetadata(_SyncMetadata metadata) async {
+    await _storage.saveItem<Map<String, Object?>>(
       StorageBoxNames.syncMeta,
       metadata.toStorageMap(),
     );
@@ -244,6 +261,16 @@ class SyncDependencies {
   final EncryptionService encryption;
 }
 
+class _MergeOutcome {
+  const _MergeOutcome({
+    required this.item,
+    required this.shouldUploadWinner,
+  });
+
+  final SyncableModel item;
+  final bool shouldUploadWinner;
+}
+
 class _SyncMetadata {
   _SyncMetadata({
     required this.boxClocks,
@@ -268,13 +295,20 @@ class _SyncMetadata {
 
     return _SyncMetadata(
       boxClocks: rawClocks is Map
-          ? rawClocks.map(
-              (key, value) => MapEntry(key.toString(), value is int ? value : 0),
+          ? Map<String, int>.fromEntries(
+              rawClocks.entries.map(
+                (entry) => MapEntry(
+                  entry.key.toString(),
+                  entry.value is int ? entry.value as int : 0,
+                ),
+              ),
             )
           : <String, int>{},
       etags: rawEtags is Map
-          ? rawEtags.map(
-              (key, value) => MapEntry(key.toString(), value.toString()),
+          ? Map<String, String>.fromEntries(
+              rawEtags.entries.map(
+                (entry) => MapEntry(entry.key.toString(), entry.value.toString()),
+              ),
             )
           : <String, String>{},
     );
