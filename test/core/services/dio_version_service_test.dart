@@ -130,12 +130,12 @@ void main() {
 
     test('calculateUpdatePath returns an empty list when no path exists', () {
       final service = DioVersionService();
-      const manifest = UpdateManifest(
+      final manifest = UpdateManifest(
         version: '2.0.0',
         releaseNotes: 'Release',
         releaseDate: DateTime(2026),
-        packages: {},
-        patches: [
+        packages: const {},
+        patches: const [
           PatchInfo(
             fromVersion: '1.5.0',
             toVersion: '2.0.0',
