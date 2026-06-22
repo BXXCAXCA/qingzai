@@ -26,7 +26,7 @@ class PomodoroSession implements SyncableModel {
     this.isCompleted = false,
     this.taskId,
     required this.deviceId,
-    this.lastModified,
+    DateTime? lastModified,
     this.lamportClock = 0,
     this.isDeleted = false,
   }) : lastModified = lastModified ?? endTime ?? startTime {
