@@ -17,10 +17,11 @@
 - Storage / WebDAV / Encryption / LAN Transfer / Platform / Version 服务接口
 - Hive 本地存储实现（盒子初始化、手写 TypeAdapter、CRUD、批量保存、变化监听）
 - AES-256-GCM 加密服务实现（PBKDF2-HMAC-SHA256 派生密钥、随机 IV、认证标签校验、SHA-256 哈希）
+- Dio WebDAV 服务实现（HTTPS 校验、Basic Auth、PROPFIND、PUT、GET、HEAD、DELETE、MKCOL、ETag/元数据解析）
 - SyncResult、SyncManager 接口与确定性冲突解析器
 - Riverpod 服务注入入口
 - Flutter CI 工作流
-- 基础 Widget 测试、模型序列化测试、加密服务测试与 Hive 存储服务测试
+- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试与 WebDAV 服务测试
 
 ## 计划模块
 
