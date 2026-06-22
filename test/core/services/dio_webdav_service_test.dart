@@ -23,8 +23,8 @@ void main() {
     test('rejects non-HTTPS WebDAV URLs', () async {
       final service = DioWebDavService();
 
-      expect(
-        () => service.connect(
+      await expectLater(
+        service.connect(
           const WebDavConfig(
             serverUrl: 'http://example.com/dav',
             username: 'user',
@@ -148,8 +148,8 @@ void main() {
       final service = DioWebDavService(dio: buildDio(adapter));
       await service.connect(config);
 
-      expect(
-        () => service.downloadFile('../secret.enc'),
+      await expectLater(
+        service.downloadFile('../secret.enc'),
         throwsA(isA<ValidationException>()),
       );
     });
