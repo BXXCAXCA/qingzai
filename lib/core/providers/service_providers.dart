@@ -6,6 +6,7 @@ import '../services/encryption_service.dart';
 import '../services/hive_storage_service.dart';
 import '../services/lan_transfer_service.dart';
 import '../services/platform_service.dart';
+import '../services/socket_lan_transfer_service.dart';
 import '../services/storage_service.dart';
 import '../services/version_service.dart';
 import '../services/webdav_service.dart';
@@ -24,7 +25,9 @@ final webDavServiceProvider = Provider<WebDavService>((ref) {
 });
 
 final lanTransferServiceProvider = Provider<LanTransferService>((ref) {
-  throw UnimplementedError('LanTransferService implementation is not registered.');
+  final service = SocketLanTransferService();
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 final versionServiceProvider = Provider<VersionService>((ref) {
