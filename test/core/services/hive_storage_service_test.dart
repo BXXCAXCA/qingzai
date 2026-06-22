@@ -13,7 +13,9 @@ void main() {
   late HiveStorageService storage;
 
   setUp(() async {
-    tempDirectory = await Directory.systemTemp.createTemp('qingzai_hive_storage_test_');
+    tempDirectory = await Directory.systemTemp.createTemp(
+      'qingzai_hive_storage_test_',
+    );
     storage = HiveStorageService(storageDirectory: tempDirectory.path);
     await storage.initialize();
   });
@@ -66,7 +68,10 @@ void main() {
       final loaded = await storage.getAllItems<TodoItem>(StorageBoxNames.todos);
 
       expect(count, 2);
-      expect(loaded.map((todo) => todo.title), containsAll(['First', 'Second']));
+      expect(
+        loaded.map((todo) => todo.title),
+        containsAll(['First', 'Second']),
+      );
     });
 
     test('deleteItem removes an existing item and reports whether it existed', () async {
@@ -78,7 +83,10 @@ void main() {
 
       expect(deleted, isTrue);
       expect(deletedAgain, isFalse);
-      expect(await storage.getItemById<TodoItem>(StorageBoxNames.todos, todo.id), isNull);
+      expect(
+        await storage.getItemById<TodoItem>(StorageBoxNames.todos, todo.id),
+        isNull,
+      );
     });
 
     test('clearBox removes all items from a box', () async {
@@ -95,7 +103,7 @@ void main() {
     test('watchBox emits when a box changes', () async {
       final expectation = expectLater(
         storage.watchBox(StorageBoxNames.todos),
-        emits(isA<dynamic>()),
+        emits(anything),
       );
 
       await storage.saveItem(
