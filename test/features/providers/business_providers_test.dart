@@ -23,7 +23,7 @@ void main() {
       final todo = await controller.createTodo(title: 'Ship task', priority: 2);
       expect(todo.deviceId, 'device-1');
       expect(todo.lamportClock, 1);
-      expect(controller.state.requireValue, hasLength(1));
+      expect(controller.state.value, hasLength(1));
 
       final toggled = await controller.toggleCompleted(todo.id);
       expect(toggled.isCompleted, isTrue);
@@ -31,7 +31,7 @@ void main() {
 
       final deleted = await controller.deleteTodo(todo.id);
       expect(deleted.isDeleted, isTrue);
-      expect(controller.state.requireValue, isEmpty);
+      expect(controller.state.value, isEmpty);
       expect(
         (await storage.getItemById(StorageBoxNames.todos, todo.id))!.isDeleted,
         isTrue,
@@ -45,14 +45,14 @@ void main() {
         type: ClipboardType.text,
         content: 'hello',
       );
-      expect(controller.state.requireValue.single.content, 'hello');
+      expect(controller.state.value!.single.content, 'hello');
 
       final favorite = await controller.toggleFavorite(item.id);
       expect(favorite.isFavorite, isTrue);
       expect(controller.favorites, hasLength(1));
 
       await controller.deleteClipboardItem(item.id);
-      expect(controller.state.requireValue, isEmpty);
+      expect(controller.state.value, isEmpty);
     });
 
     test('NotesController creates notes, searches, pins, and tombstones', () async {
@@ -68,10 +68,10 @@ void main() {
 
       final pinned = await controller.togglePinned(note.id);
       expect(pinned.isPinned, isTrue);
-      expect(controller.state.requireValue.first.id, note.id);
+      expect(controller.state.value!.first.id, note.id);
 
       await controller.deleteNote(note.id);
-      expect(controller.state.requireValue, isEmpty);
+      expect(controller.state.value, isEmpty);
     });
 
     test('PomodoroController starts, completes, and tombstones sessions', () async {
@@ -91,20 +91,20 @@ void main() {
       expect(controller.completedSessions, hasLength(1));
 
       await controller.deleteSession(session.id);
-      expect(controller.state.requireValue, isEmpty);
+      expect(controller.state.value, isEmpty);
     });
 
     test('MemoController creates memos and appends attachments', () async {
       final controller = MemoController(storage: storage, deviceId: 'device-1');
 
       final memo = await controller.createMemo(content: 'Remember this');
-      expect(controller.state.requireValue.single.content, 'Remember this');
+      expect(controller.state.value!.single.content, 'Remember this');
 
       final withAttachment = await controller.addAttachment(memo.id, '/tmp/file.pdf');
       expect(withAttachment.attachments, contains('/tmp/file.pdf'));
 
       await controller.deleteMemo(memo.id);
-      expect(controller.state.requireValue, isEmpty);
+      expect(controller.state.value, isEmpty);
     });
   });
 }
