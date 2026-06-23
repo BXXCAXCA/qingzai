@@ -28,7 +28,15 @@ jobs:
         run: flutter pub get
 
       - name: Analyze source
-        run: flutter analyze
+        run: |
+          flutter analyze > analyze.log 2>&1
+
+      - name: Upload analyze log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyze-log
+          path: analyze.log
 
       - name: Run unit, widget, and service integration tests
         run: flutter test
