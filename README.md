@@ -27,15 +27,17 @@
 - Todo / Clipboard / Notes / Pomodoro / Memo 业务 Provider 实现（Riverpod StateNotifier、CRUD、状态排序、tombstone 删除）
 - Todo / Clipboard / Notes / Memo / Pomodoro / LAN Transfer / Settings 表现层 UI 雏形（列表、表单、状态操作、设置入口）
 - 性能基准工具（样本记录、P95 计算、阈值判定、设备/系统/网络条件元数据）
-- 开发、部署、发布检查清单、更新 manifest、最终验证报告与发布说明模板文档
+- 集成测试骨架（同步全链路、LAN loopback、更新流程、平台兼容性契约、应用壳冒烟）
+- 开发、部署、集成测试、发布检查清单、更新 manifest、最终验证报告与发布说明模板文档
 - Riverpod 服务注入入口
 - Flutter CI 工作流（支持 push、PR 和手动 workflow_dispatch）
-- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试、业务 Provider 测试、离线支持测试、平台服务测试、性能指标测试与安全加固测试
+- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试、业务 Provider 测试、离线支持测试、平台服务测试、性能指标测试、安全加固测试与服务级集成测试
 
 ## 文档入口
 
 - [开发指南](docs/development.md)
 - [部署指南](docs/deployment.md)
+- [集成测试指南](docs/integration-testing.md)
 - [发布检查清单](docs/release-checklist.md)
 - [更新 manifest 格式](docs/update-manifest.md)
 - [最终验证报告](docs/final-verification-report.md)
@@ -57,6 +59,7 @@
 ## 目录结构
 
 ```text
+integration_test/      # 真机/模拟器应用冒烟测试
 lib/
   app/                 # 应用入口、导航壳
   core/
@@ -86,6 +89,7 @@ lib/
     todos/providers/       # 待办事项业务状态
     todos/presentation/    # 待办事项 UI
 test/
+  integration/         # 服务级集成测试
   core/offline/        # 离线支持测试
   core/performance/    # 性能指标测试
   core/security/       # 安全加固测试
@@ -101,6 +105,7 @@ test/
 flutter pub get
 flutter analyze
 flutter test
+flutter test integration_test
 flutter run
 ```
 
