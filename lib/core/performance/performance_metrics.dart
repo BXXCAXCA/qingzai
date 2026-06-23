@@ -113,6 +113,7 @@ class PerformanceBenchmark {
     }
 
     final rank = (sorted.length * 0.95).ceil() - 1;
-    return sorted[rank.clamp(0, sorted.length - 1)];
+    final index = rank.clamp(0, sorted.length - 1).toInt();
+    return sorted[index];
   }
 }
