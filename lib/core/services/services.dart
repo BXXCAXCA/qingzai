@@ -1,4 +1,5 @@
 export 'aes_gcm_encryption_service.dart';
+export 'default_platform_service.dart';
 export 'dio_version_service.dart';
 export 'dio_webdav_service.dart';
 export 'encryption_service.dart';
