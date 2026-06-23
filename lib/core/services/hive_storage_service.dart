@@ -13,6 +13,7 @@ class HiveStorageService implements StorageService {
   final String? storageDirectory;
 
   bool _initialized = false;
+  Future<void>? _initializing;
 
   @override
   Future<void> initialize() async {
@@ -20,6 +21,21 @@ class HiveStorageService implements StorageService {
       return;
     }
 
+    final inFlight = _initializing;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    _initializing = _initializeInternal();
+    try {
+      await _initializing;
+    } finally {
+      _initializing = null;
+    }
+  }
+
+  Future<void> _initializeInternal() async {
     try {
       await Hive.initFlutter(storageDirectory);
       registerQingZaiHiveAdapters();
@@ -154,8 +170,10 @@ class HiveStorageService implements StorageService {
   }
 
   Future<Box<dynamic>> _box(String boxName) async {
-    _ensureInitialized();
     _validateBoxName(boxName);
+    if (!_initialized) {
+      await initialize();
+    }
 
     if (!Hive.isBoxOpen(boxName)) {
       return Hive.openBox<dynamic>(boxName);
