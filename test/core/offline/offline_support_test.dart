@@ -5,11 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:qingzai/core/errors/app_exception.dart';
 import 'package:qingzai/core/errors/error_messages.dart';
+import 'package:qingzai/core/models/syncable_model.dart';
 import 'package:qingzai/core/offline/offline.dart';
 import 'package:qingzai/core/services/storage_service.dart';
 import 'package:qingzai/core/sync/sync_manager.dart';
 import 'package:qingzai/core/sync/sync_result.dart';
-import 'package:qingzai/core/models/syncable_model.dart';
 
 void main() {
   group('RetryPolicy', () {
@@ -79,6 +79,21 @@ void main() {
         await queue.pending(now: DateTime.now().add(const Duration(seconds: 2))),
         hasLength(1),
       );
+    });
+
+    test('enqueue resets retry delay for an existing operation', () async {
+      final operation = await queue.enqueue(
+        boxName: StorageBoxNames.todos,
+        reason: 'network error',
+      );
+      await queue.markAttemptFailed(operation: operation, error: 'boom');
+
+      await queue.enqueue(boxName: StorageBoxNames.todos, reason: 'user retry');
+
+      final pending = await queue.pending();
+      expect(pending, hasLength(1));
+      expect(pending.single.reason, 'user retry');
+      expect(pending.single.nextRetryAt, isNull);
     });
   });
 
