@@ -31,7 +31,14 @@ jobs:
         run: flutter create . --platforms=android --project-name qingzai --org com.qingzai
 
       - name: Build debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug > android-build.log 2>&1
+
+      - name: Upload Android build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log
+          path: android-build.log
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -68,7 +75,14 @@ jobs:
         run: flutter create . --platforms=linux --project-name qingzai --org com.qingzai
 
       - name: Build Linux release bundle
-        run: flutter build linux --release
+        run: flutter build linux --release > linux-build.log 2>&1
+
+      - name: Upload Linux build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-log
+          path: linux-build.log
 
       - name: Archive Linux bundle
         run: tar -czf qingzai-linux-preview.tar.gz -C build/linux/x64/release/bundle .
@@ -103,7 +117,14 @@ jobs:
         run: flutter create . --platforms=windows --project-name qingzai --org com.qingzai
 
       - name: Build Windows release bundle
-        run: flutter build windows --release
+        run: flutter build windows --release > windows-build.log 2>&1
+
+      - name: Upload Windows build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-log
+          path: windows-build.log
 
       - name: Archive Windows bundle
         shell: pwsh
