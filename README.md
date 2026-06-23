@@ -8,20 +8,21 @@
 
 - Material Design 3 应用入口
 - Riverpod 依赖接入
-- 首页与核心功能占位页面
+- 首页与核心功能页面
 - 基础主题与深色模式
 - 分层目录结构
 - 核心异常类型
 - 可同步模型基础接口与 tombstone 占位
 - Todo / Clipboard / Note / Pomodoro / Memo 核心数据模型
 - Storage / WebDAV / Encryption / LAN Transfer / Platform / Version 服务接口
-- Hive 本地存储实现（盒子初始化、手写 TypeAdapter、CRUD、批量保存、变化监听）
+- Hive 本地存储实现（盒子初始化、懒初始化、手写 TypeAdapter、CRUD、批量保存、变化监听）
 - AES-256-GCM 加密服务实现（PBKDF2-HMAC-SHA256 派生密钥、随机 IV、认证标签校验、SHA-256 哈希）
 - Dio WebDAV 服务实现（HTTPS 校验、Basic Auth、PROPFIND、PUT、GET、HEAD、DELETE、MKCOL、ETag/元数据解析）
 - SyncManager 核心流程实现（本地变更识别、加密上传、远程 ETag 比较、下载解密合并、确定性冲突解析、同步元数据记录）
 - Socket LAN 传输服务实现（本机接收端口、设备扫描流、TCP 文件发送/接收、进度流、取消标记、SHA-256 校验）
 - Dio Version 更新服务实现（manifest 检查、商店跳转策略、自托管下载进度、SHA-256 校验、补丁最短路径计算）
 - Todo / Clipboard / Notes / Pomodoro / Memo 业务 Provider 实现（Riverpod StateNotifier、CRUD、状态排序、tombstone 删除）
+- Todo / Clipboard / Notes / Memo / Pomodoro / LAN Transfer / Settings 表现层 UI 雏形（列表、表单、状态操作、设置入口）
 - Riverpod 服务注入入口
 - Flutter CI 工作流
 - 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试与业务 Provider 测试
@@ -50,16 +51,21 @@ lib/
     sync/              # 同步结果、同步管理器与冲突解析
     theme/             # Material 3 主题
   features/
-    clipboard/models/  # 剪切板数据模型
-    clipboard/providers/ # 剪切板业务状态
-    memos/models/      # 备忘录数据模型
-    memos/providers/   # 备忘录业务状态
-    notes/models/      # 笔记数据模型
-    notes/providers/   # 笔记业务状态
-    pomodoro/models/   # 番茄钟会话模型
-    pomodoro/providers/# 番茄钟业务状态
-    todos/models/      # 待办事项模型
-    todos/providers/   # 待办事项业务状态
+    clipboard/models/      # 剪切板数据模型
+    clipboard/providers/   # 剪切板业务状态
+    clipboard/presentation/# 剪切板 UI
+    memos/models/          # 备忘录数据模型
+    memos/providers/       # 备忘录业务状态
+    memos/presentation/    # 备忘录 UI
+    notes/models/          # 笔记数据模型
+    notes/providers/       # 笔记业务状态
+    notes/presentation/    # 笔记 UI
+    pomodoro/models/       # 番茄钟会话模型
+    pomodoro/providers/    # 番茄钟业务状态
+    pomodoro/presentation/ # 番茄钟 UI
+    todos/models/          # 待办事项模型
+    todos/providers/       # 待办事项业务状态
+    todos/presentation/    # 待办事项 UI
 test/
   core/services/       # 核心服务测试
   core/sync/           # 同步管理器测试
