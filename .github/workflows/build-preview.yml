@@ -2,6 +2,9 @@ name: Build Preview Artifacts
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   android:
