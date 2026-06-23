@@ -6,11 +6,17 @@ class SensitiveValueRedactor {
   String redact(String input) {
     var output = input;
     output = output.replaceAllMapped(
-      RegExp(r'(?i)(authorization\s*[:=]\s*)(basic|bearer)\s+[^\s,;]+'),
+      RegExp(
+        r'(authorization\s*[:=]\s*)(basic|bearer)\s+[^\s,;]+',
+        caseSensitive: false,
+      ),
       (match) => '${match.group(1)}${match.group(2)} $redacted',
     );
     output = output.replaceAllMapped(
-      RegExp(r'(?i)(password|secret|token|api[_-]?key)\s*[:=]\s*([^\s,;]+)'),
+      RegExp(
+        r'(password|secret|token|api[_-]?key)\s*[:=]\s*([^\s,;]+)',
+        caseSensitive: false,
+      ),
       (match) => '${match.group(1)}=$redacted',
     );
     output = output.replaceAllMapped(
