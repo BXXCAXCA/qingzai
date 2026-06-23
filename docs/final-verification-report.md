@@ -6,7 +6,7 @@
 
 ## 总体结论
 
-当前仓库已经完成轻载 Qing Zai 的 Flutter 工程化 MVP 骨架，包含模型层、核心服务层、同步层、离线支持、局域网传输、更新服务、平台服务、业务 Provider、表现层 UI、安全加固、性能工具和发布文档。
+当前仓库已经完成轻载 Qing Zai 的 Flutter 工程化 MVP 骨架，包含模型层、核心服务层、同步层、离线支持、局域网传输、更新服务、平台服务、业务 Provider、表现层 UI、安全加固、性能工具、集成测试骨架和发布文档。
 
 由于当前执行环境无法运行 Flutter SDK，且 GitHub Actions 目前没有产生 workflow run，本报告不能声明 `flutter analyze` 或 `flutter test` 已通过。
 
@@ -42,9 +42,18 @@
 - WebDAV 和更新下载入口已增加 HTTPS、凭据、路径和校验和约束。
 - 性能基准工具支持样本记录、P95 计算、阈值判定和元数据记录。
 
+### 集成测试
+
+- 服务级集成测试已补充到 `test/integration/`：
+  - 双设备 WebDAV 同步全链路。
+  - loopback LAN 文件传输端到端。
+  - 自托管更新检查、下载和校验链路。
+  - 平台兼容性契约。
+- 应用冒烟测试已补充到 `integration_test/`，用于验证应用壳和主导航渲染。
+
 ### 文档与发布准备
 
-- 开发指南、部署指南、发布检查清单、更新 manifest 文档、manifest 示例、贡献指南、发布说明模板已补齐。
+- 开发指南、部署指南、集成测试指南、发布检查清单、更新 manifest 文档、manifest 示例、贡献指南、发布说明模板已补齐。
 - CI 配置存在，并支持 push、PR 和手动 workflow_dispatch。
 
 ## 未能自动验证
@@ -54,6 +63,7 @@
 - `flutter pub get`
 - `flutter analyze`
 - `flutter test`
+- `flutter test integration_test`
 - Android / iOS / Windows 平台工程生成与构建
 - HarmonyOS Flutter SDK 可用性与平台工程配置
 - 真机或局域网环境下的 mDNS 发现与文件传输
@@ -80,5 +90,6 @@
 - 工程骨架：完成
 - MVP 功能闭环：源码层面完成
 - 自动化验证：未完成
+- 服务级集成测试：已补充，待运行确认
 - 发布准备：文档层面完成，平台构建和真实环境验证未完成
 - 建议发布等级：内部开发预览，不建议作为生产版本发布
