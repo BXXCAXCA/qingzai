@@ -44,7 +44,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen> {
           ),
         ),
         data: (sessions) {
-          final active = sessions.where((session) => !session.isCompleted).firstOrNull;
+          final active = _firstActiveSession(sessions);
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -66,6 +66,13 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen> {
         },
       ),
     );
+  }
+
+  PomodoroSession? _firstActiveSession(List<PomodoroSession> sessions) {
+    for (final session in sessions) {
+      if (!session.isCompleted) return session;
+    }
+    return null;
   }
 }
 
