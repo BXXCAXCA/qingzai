@@ -28,6 +28,7 @@ class PendingSyncOperation {
     int? attemptCount,
     String? lastError,
     DateTime? nextRetryAt,
+    bool resetNextRetryAt = false,
   }) {
     return PendingSyncOperation(
       id: id,
@@ -36,7 +37,7 @@ class PendingSyncOperation {
       queuedAt: queuedAt,
       attemptCount: attemptCount ?? this.attemptCount,
       lastError: lastError ?? this.lastError,
-      nextRetryAt: nextRetryAt ?? this.nextRetryAt,
+      nextRetryAt: resetNextRetryAt ? null : nextRetryAt ?? this.nextRetryAt,
     );
   }
 
@@ -116,7 +117,10 @@ class HiveOfflineSyncQueue implements OfflineSyncQueue {
             reason: normalizedReason,
             queuedAt: DateTime.now(),
           )
-        : existing.copyWith(reason: normalizedReason, nextRetryAt: null);
+        : existing.copyWith(
+            reason: normalizedReason,
+            resetNextRetryAt: true,
+          );
 
     await _storage.saveItem<Map<String, Object?>>(
       StorageBoxNames.syncMeta,
