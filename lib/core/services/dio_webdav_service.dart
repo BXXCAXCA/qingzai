@@ -108,7 +108,10 @@ class DioWebDavService implements WebDavService {
       throw WebDavException('Failed to download WebDAV file: HTTP ${response.statusCode}');
     }
 
-    final data = List<int>.from(response.data as List<dynamic>);
+    final rawData = response.data;
+    final data = rawData is List<int>
+        ? List<int>.from(rawData)
+        : List<int>.from(rawData as List<dynamic>);
     return DownloadResult(
       data: data,
       metadata: _metadataFromHeaders(
@@ -240,6 +243,9 @@ class DioWebDavService implements WebDavService {
     if (uri.scheme.toLowerCase() != 'https') {
       throw const ValidationException('WebDAV server URL must use HTTPS.');
     }
+    if (uri.userInfo.isNotEmpty) {
+      throw const ValidationException('WebDAV server URL must not contain embedded credentials.');
+    }
     return uri;
   }
 
@@ -254,11 +260,24 @@ class DioWebDavService implements WebDavService {
     if (baseUri == null) {
       throw const WebDavException('WebDAV service is not configured.');
     }
+    _validateRemotePath(remotePath, allowRoot: true);
     final normalizedPath = _normalizeRemotePath(remotePath);
     return baseUri.resolve(normalizedPath);
   }
 
   void _validateRemotePath(String remotePath, {bool allowRoot = false}) {
+    final trimmed = remotePath.trim();
+    if (trimmed.contains('\u0000') || trimmed.contains('\\')) {
+      throw const ValidationException('Remote path contains invalid characters.');
+    }
+    if (trimmed.startsWith('//')) {
+      throw const ValidationException('Remote path must not be protocol-relative.');
+    }
+    final parsed = Uri.tryParse(trimmed);
+    if (parsed != null && parsed.hasScheme) {
+      throw const ValidationException('Remote path must be relative to the WebDAV root.');
+    }
+
     final normalizedPath = _normalizeRemotePath(remotePath);
     if (!allowRoot && normalizedPath.isEmpty) {
       throw const ValidationException('Remote path must not be empty.');
@@ -319,6 +338,7 @@ class DioWebDavService implements WebDavService {
         .allMatches(xml)
         .map((match) => _parseResponseNode(match.group(1) ?? ''))
         .whereType<FileMetadata>()
+        .where((metadata) => metadata.path.isNotEmpty)
         .where((metadata) => _stripTrailingSlash(metadata.path) != requested)
         .toList(growable: false);
   }
@@ -362,8 +382,24 @@ class DioWebDavService implements WebDavService {
   }
 
   String _pathRelativeToBase(String absoluteOrRelativePath) {
-    final basePath = _baseUri?.path ?? '/';
-    final path = absoluteOrRelativePath.startsWith('/') ? absoluteOrRelativePath : '/$absoluteOrRelativePath';
+    final baseUri = _baseUri;
+    final parsed = Uri.tryParse(absoluteOrRelativePath);
+    String path;
+    if (parsed != null && parsed.hasScheme) {
+      if (baseUri == null ||
+          parsed.scheme.toLowerCase() != baseUri.scheme.toLowerCase() ||
+          parsed.host.toLowerCase() != baseUri.host.toLowerCase() ||
+          parsed.port != baseUri.port) {
+        return '';
+      }
+      path = parsed.path;
+    } else {
+      path = absoluteOrRelativePath.startsWith('/')
+          ? absoluteOrRelativePath
+          : '/$absoluteOrRelativePath';
+    }
+
+    final basePath = baseUri?.path ?? '/';
     if (path.startsWith(basePath)) {
       return _normalizeRemotePath(path.substring(basePath.length));
     }
@@ -384,10 +420,10 @@ class DioWebDavService implements WebDavService {
 
   String _decodeXml(String value) {
     return value
-        .replaceAll('&quot;', '"')
-        .replaceAll('&apos;', "'")
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&apos;', "'")
         .replaceAll('&amp;', '&');
   }
 
@@ -397,14 +433,13 @@ class DioWebDavService implements WebDavService {
     }
     try {
       return HttpDate.parse(value);
-    } on FormatException {
+    } catch (_) {
       return null;
     }
   }
-}
 
-const _propfindAllPropertiesBody = '''<?xml version="1.0" encoding="utf-8"?>
+  static const _propfindAllPropertiesBody = '''<?xml version="1.0" encoding="utf-8" ?>
 <propfind xmlns="DAV:">
   <allprop />
-</propfind>
-''';
+</propfind>''';
+}
