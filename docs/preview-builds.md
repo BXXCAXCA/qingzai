@@ -4,7 +4,7 @@ Qing Zai can produce installable preview artifacts from GitHub Actions without r
 
 ## Build artifacts
 
-The `Build Preview Artifacts` workflow can be started manually from the GitHub Actions page. It uploads these artifacts when the jobs pass:
+The `Build Preview Artifacts` workflow can be started manually from the GitHub Actions page. It also runs on pull requests and pushes to `main` so preview packaging stays continuously verified. It uploads these artifacts when the jobs pass:
 
 - `qingzai-android-debug-apk`: Android debug APK for internal testing.
 - `qingzai-linux-preview`: Linux release bundle archived as `tar.gz`.
