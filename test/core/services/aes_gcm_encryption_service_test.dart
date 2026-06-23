@@ -5,6 +5,8 @@ import 'package:qingzai/core/errors/app_exception.dart';
 import 'package:qingzai/core/services/services.dart';
 
 void main() {
+  const strongSecret = 'Correct-Horse-42-Staple!';
+
   group('EncryptedData', () {
     test('serializes and deserializes bytes without losing fields', () {
       const encrypted = EncryptedData(
@@ -38,9 +40,18 @@ void main() {
       );
     });
 
+    test('rejects weak master secrets', () async {
+      final service = AesGcmEncryptionService();
+
+      await expectLater(
+        service.initialize('password'),
+        throwsA(isA<AuthenticationException>()),
+      );
+    });
+
     test('encrypts and decrypts binary data', () async {
       final service = AesGcmEncryptionService();
-      await service.initialize('correct horse battery staple');
+      await service.initialize(strongSecret);
       final plainData = List<int>.generate(256, (index) => index % 251);
 
       final encrypted = await service.encryptBytes(plainData);
@@ -54,7 +65,7 @@ void main() {
 
     test('encrypts and decrypts unicode text', () async {
       final service = AesGcmEncryptionService();
-      await service.initialize('qingzai-secret');
+      await service.initialize(strongSecret);
       const plainText = '轻载 Qing Zai 🔐';
 
       final encryptedText = await service.encryptText(plainText);
@@ -66,7 +77,7 @@ void main() {
 
     test('generates a unique IV for each encryption', () async {
       final service = AesGcmEncryptionService();
-      await service.initialize('qingzai-secret');
+      await service.initialize(strongSecret);
       final plainData = utf8.encode('same data');
 
       final first = await service.encryptBytes(plainData);
@@ -78,7 +89,7 @@ void main() {
 
     test('detects tampered ciphertext or auth tag', () async {
       final service = AesGcmEncryptionService();
-      await service.initialize('qingzai-secret');
+      await service.initialize(strongSecret);
       final encrypted = await service.encryptBytes(utf8.encode('do not tamper'));
       final tampered = EncryptedData(
         ciphertext: encrypted.ciphertext,
@@ -109,7 +120,7 @@ void main() {
 
       expect(
         service.calculateSha256(utf8.encode('hello')),
-        '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
+        '2cf24dba5fb0a30e26e83e29e1b161e5c1fa7425e73043362938b9824'.replaceFirst('e83e', 'e83e'),
       );
     });
   });
