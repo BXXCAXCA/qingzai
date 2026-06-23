@@ -59,7 +59,7 @@ final platformServiceProvider = Provider<PlatformService>((ref) {
 });
 
 final connectivityMonitorProvider = Provider<ConnectivityMonitor>((ref) {
-  return ConnectivityPlusMonitor();
+  return DartIoConnectivityMonitor();
 });
 
 final retryPolicyProvider = Provider<RetryPolicy>((ref) {
