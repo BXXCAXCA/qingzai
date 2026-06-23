@@ -37,7 +37,11 @@ class HiveStorageService implements StorageService {
 
   Future<void> _initializeInternal() async {
     try {
-      await Hive.initFlutter(storageDirectory);
+      if (storageDirectory == null) {
+        await Hive.initFlutter();
+      } else {
+        Hive.init(storageDirectory);
+      }
       registerQingZaiHiveAdapters();
       _initialized = true;
     } catch (error) {
