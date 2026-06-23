@@ -51,7 +51,7 @@ void main() {
                 notes: 'Release',
                 size: 10,
                 source: 'http://updates.example.com/qingzai.zip',
-                sha256: '0' * 64,
+                sha256: ''.padLeft(64, '0'),
                 releaseDate: DateTime(2026),
                 strategy: UpdateStrategy.selfHostedFullPackage,
               ),
