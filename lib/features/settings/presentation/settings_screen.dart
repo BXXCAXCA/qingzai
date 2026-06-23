@@ -79,12 +79,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.lock_outline,
             title: '端到端加密',
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: _masterPasswordController,
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: '主密码',
+                    helperText: '至少 12 位，并包含多种字符类型。',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -143,16 +145,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
       setState(() => _message = connected ? 'WebDAV 连接成功。' : 'WebDAV 连接失败。');
     } catch (error) {
-      setState(() => _message = 'WebDAV 连接失败：$error');
+      setState(() => _message = 'WebDAV 连接失败：${_redact(error)}');
     }
   }
 
   Future<void> _initializeEncryption() async {
     try {
       await ref.read(encryptionServiceProvider).initialize(_masterPasswordController.text);
+      _masterPasswordController.clear();
       setState(() => _message = '加密服务已初始化。');
     } catch (error) {
-      setState(() => _message = '加密服务初始化失败：$error');
+      setState(() => _message = '加密服务初始化失败：${_redact(error)}');
     }
   }
 
@@ -167,8 +170,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
       setState(() => _message = info == null ? '当前无可用更新。' : '发现版本 ${info.version}。');
     } catch (error) {
-      setState(() => _message = '更新服务尚未配置 manifest：$error');
+      setState(() => _message = '更新服务尚未配置 manifest：${_redact(error)}');
     }
+  }
+
+  String _redact(Object error) {
+    return ref.read(sensitiveValueRedactorProvider).redactError(error).toString();
   }
 }
 
