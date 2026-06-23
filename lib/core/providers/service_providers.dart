@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../errors/error_messages.dart';
+import '../offline/offline.dart';
 import '../services/aes_gcm_encryption_service.dart';
 import '../services/dio_version_service.dart';
 import '../services/dio_webdav_service.dart';
@@ -43,6 +45,29 @@ final platformServiceProvider = Provider<PlatformService>((ref) {
   throw UnimplementedError('PlatformService implementation is not registered.');
 });
 
+final connectivityMonitorProvider = Provider<ConnectivityMonitor>((ref) {
+  return ConnectivityPlusMonitor();
+});
+
+final retryPolicyProvider = Provider<RetryPolicy>((ref) {
+  return const RetryPolicy();
+});
+
+final offlineSyncQueueProvider = Provider<OfflineSyncQueue>((ref) {
+  return HiveOfflineSyncQueue(
+    storage: ref.watch(storageServiceProvider),
+    retryPolicy: ref.watch(retryPolicyProvider),
+  );
+});
+
+final storageSpaceServiceProvider = Provider<StorageSpaceService>((ref) {
+  return const AppStorageSpaceService();
+});
+
+final errorMessageFormatterProvider = Provider<ErrorMessageFormatter>((ref) {
+  return const ErrorMessageFormatter();
+});
+
 final conflictResolverProvider = Provider<ConflictResolver>((ref) {
   return const ConflictResolver();
 });
@@ -63,5 +88,13 @@ final syncManagerProvider = Provider<SyncManager>((ref) {
     webDav: dependencies.webDav,
     encryption: dependencies.encryption,
     conflictResolver: ref.watch(conflictResolverProvider),
+  );
+});
+
+final offlineSyncCoordinatorProvider = Provider<OfflineSyncCoordinator>((ref) {
+  return OfflineSyncCoordinator(
+    connectivity: ref.watch(connectivityMonitorProvider),
+    queue: ref.watch(offlineSyncQueueProvider),
+    syncManager: ref.watch(syncManagerProvider),
   );
 });
