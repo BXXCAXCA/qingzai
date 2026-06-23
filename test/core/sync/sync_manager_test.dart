@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show gzip;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -43,7 +44,7 @@ void main() {
   });
 
   group('DefaultSyncManager', () {
-    test('uploads local changes as encrypted JSON files and records ETags', () async {
+    test('uploads local changes as compressed encrypted JSON files and records ETags', () async {
       final storage = _MemoryStorageService()
         ..put(StorageBoxNames.todos, _todo(id: _id1, clock: 1));
       final webDav = _MemoryWebDavService();
@@ -62,7 +63,9 @@ void main() {
       expect(webDav.uploads.single.remotePath, 'todos/$_id1.enc');
 
       final uploadedPayload = EncryptedData.fromBytes(webDav.uploads.single.data);
-      final uploadedJson = jsonDecode(utf8.decode(uploadedPayload.ciphertext));
+      final uploadedJson = jsonDecode(
+        utf8.decode(gzip.decode(uploadedPayload.ciphertext)),
+      );
       expect(uploadedJson['id'], _id1);
       expect(uploadedJson['lamportClock'], 1);
 
@@ -71,7 +74,7 @@ void main() {
       expect(metadata['etags']['todos/$_id1.enc'], 'etag-1');
     });
 
-    test('downloads remote changes, decrypts them, and saves new items locally', () async {
+    test('downloads compressed remote changes, decrypts them, and saves new items locally', () async {
       final storage = _MemoryStorageService();
       final encryption = _PassthroughEncryptionService();
       final remoteTodo = _todo(id: _id2, deviceId: 'remote-device', clock: 5);
@@ -97,6 +100,29 @@ void main() {
       expect(saved, isNotNull);
       expect(saved!.deviceId, 'remote-device');
       expect(saved.lamportClock, 5);
+    });
+
+    test('still accepts legacy uncompressed remote sync payloads', () async {
+      final storage = _MemoryStorageService();
+      final encryption = _PassthroughEncryptionService();
+      final remoteTodo = _todo(id: _id2, deviceId: 'legacy-device', clock: 4);
+      final webDav = _MemoryWebDavService()
+        ..addRemoteFile(
+          path: 'todos/$_id2.enc',
+          etag: 'legacy-etag',
+          data: _legacyEncryptedJsonBytes(encryption, remoteTodo.toJson()),
+        );
+      final manager = DefaultSyncManager(
+        storage: storage,
+        webDav: webDav,
+        encryption: encryption,
+      );
+
+      final result = await manager.performSync(boxNames: const [StorageBoxNames.todos]);
+
+      expect(result.isSuccess, isTrue);
+      final saved = await storage.getItemById<TodoItem>(StorageBoxNames.todos, _id2);
+      expect(saved!.deviceId, 'legacy-device');
     });
 
     test('keeps deterministic local winner when remote item has lower clock', () async {
@@ -162,6 +188,15 @@ TodoItem _todo({
 }
 
 List<int> _encryptedJsonBytes(
+  _PassthroughEncryptionService encryption,
+  Map<String, dynamic> json,
+) {
+  final compressedJson = gzip.encode(utf8.encode(jsonEncode(json)));
+  final encrypted = encryption.encryptSynchronously(compressedJson);
+  return encrypted.toBytes();
+}
+
+List<int> _legacyEncryptedJsonBytes(
   _PassthroughEncryptionService encryption,
   Map<String, dynamic> json,
 ) {
