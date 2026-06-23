@@ -77,6 +77,14 @@ void main() {
         QingZaiPlatform.harmonyPhone,
       );
       expect(
+        const PlatformSnapshot(operatingSystem: 'harmony-tablet', hostname: '').qingZaiPlatform,
+        QingZaiPlatform.harmonyTablet,
+      );
+      expect(
+        const PlatformSnapshot(operatingSystem: 'harmony-watch', hostname: '').qingZaiPlatform,
+        QingZaiPlatform.harmonyWatch,
+      );
+      expect(
         const PlatformSnapshot(operatingSystem: 'linux', hostname: '').qingZaiPlatform,
         QingZaiPlatform.unknown,
       );
@@ -113,8 +121,9 @@ void main() {
       expect(ios.supportsLanTransfer, isTrue);
       expect(ios.supportsInAppVersionFlow, isFalse);
 
-      expect(watch.currentPlatform, QingZaiPlatform.unknown);
+      expect(watch.currentPlatform, QingZaiPlatform.harmonyWatch);
       expect(watch.supportsLanTransfer, isFalse);
+      expect(watch.supportsInAppVersionFlow, isTrue);
     });
   });
 }
