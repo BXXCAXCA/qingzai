@@ -1,32 +1,44 @@
 {
   "version": "0.1.1",
-  "minimumSupportedVersion": "0.1.0",
-  "publishedAt": "2026-06-23T00:00:00.000Z",
+  "releaseDate": "2026-06-23T00:00:00.000Z",
   "releaseNotes": "Initial self-hosted update manifest example.",
+  "isForceUpdate": false,
   "packages": {
     "android": {
+      "platform": "android",
       "channel": "store",
+      "downloadUrl": "",
+      "sha256": "",
+      "size": 0,
       "storeUrl": "https://example.com/android-store-listing"
     },
     "ios": {
+      "platform": "ios",
       "channel": "store",
+      "downloadUrl": "",
+      "sha256": "",
+      "size": 0,
       "storeUrl": "https://example.com/ios-store-listing"
     },
     "windows": {
-      "channel": "selfHosted",
-      "url": "https://downloads.example.com/qingzai/windows/qingzai-0.1.1-windows.zip",
+      "platform": "windows",
+      "channel": "stable",
+      "downloadUrl": "https://downloads.example.com/qingzai/windows/qingzai-0.1.1-windows.zip",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-      "sizeBytes": 104857600
+      "size": 104857600,
+      "supportsPatch": true
     }
+  },
+  "fileChecksums": {
+    "windows/qingzai-0.1.1-windows.zip": "0000000000000000000000000000000000000000000000000000000000000000"
   },
   "patches": [
     {
       "fromVersion": "0.1.0",
       "toVersion": "0.1.1",
-      "platform": "windows",
-      "url": "https://downloads.example.com/qingzai/windows/qingzai-0.1.0-to-0.1.1.patch",
+      "patchUrl": "https://downloads.example.com/qingzai/windows/qingzai-0.1.0-to-0.1.1.patch",
       "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
-      "sizeBytes": 10485760
+      "size": 10485760
     }
   ]
 }
