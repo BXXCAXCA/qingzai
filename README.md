@@ -31,12 +31,14 @@
 - 开发、部署、集成测试、发布检查清单、更新 manifest、最终验证报告与发布说明模板文档
 - Riverpod 服务注入入口
 - Flutter CI 工作流（支持 push、PR 和手动 workflow_dispatch）
+- 预览构建工作流（Android debug APK、Linux 预览包、Windows 预览包）
 - 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试、业务 Provider 测试、离线支持测试、平台服务测试、性能指标测试、安全加固测试与服务级集成测试
 
 ## 文档入口
 
 - [开发指南](docs/development.md)
 - [部署指南](docs/deployment.md)
+- [预览构建指南](docs/preview-builds.md)
 - [集成测试指南](docs/integration-testing.md)
 - [发布检查清单](docs/release-checklist.md)
 - [更新 manifest 格式](docs/update-manifest.md)
