@@ -86,7 +86,7 @@ class _TodoScreenState extends ConsumerState<TodoScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
-                      value: priority,
+                      initialValue: priority,
                       decoration: const InputDecoration(
                         labelText: '优先级',
                         border: OutlineInputBorder(),
