@@ -39,7 +39,23 @@ jobs:
           path: analyze.log
 
       - name: Run unit, widget, and service integration tests
-        run: flutter test
+        run: |
+          flutter test > test.log 2>&1
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: test.log
 
       - name: Run app smoke integration tests
-        run: flutter test integration_test
+        run: |
+          flutter test integration_test > integration-test.log 2>&1
+
+      - name: Upload integration test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-log
+          path: integration-test.log
