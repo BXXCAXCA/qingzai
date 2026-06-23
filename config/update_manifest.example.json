@@ -1,0 +1,32 @@
+{
+  "version": "0.1.1",
+  "minimumSupportedVersion": "0.1.0",
+  "publishedAt": "2026-06-23T00:00:00.000Z",
+  "releaseNotes": "Initial self-hosted update manifest example.",
+  "packages": {
+    "android": {
+      "channel": "store",
+      "storeUrl": "https://example.com/android-store-listing"
+    },
+    "ios": {
+      "channel": "store",
+      "storeUrl": "https://example.com/ios-store-listing"
+    },
+    "windows": {
+      "channel": "selfHosted",
+      "url": "https://downloads.example.com/qingzai/windows/qingzai-0.1.1-windows.zip",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "sizeBytes": 104857600
+    }
+  },
+  "patches": [
+    {
+      "fromVersion": "0.1.0",
+      "toVersion": "0.1.1",
+      "platform": "windows",
+      "url": "https://downloads.example.com/qingzai/windows/qingzai-0.1.0-to-0.1.1.patch",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "sizeBytes": 10485760
+    }
+  ]
+}
