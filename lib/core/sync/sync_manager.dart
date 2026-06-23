@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show gzip;
 
 import '../../features/clipboard/models/clipboard_item.dart';
 import '../../features/memos/models/memo_item.dart';
@@ -26,15 +27,18 @@ class DefaultSyncManager implements SyncManager {
     required WebDavService webDav,
     required EncryptionService encryption,
     ConflictResolver conflictResolver = const ConflictResolver(),
+    int maxConcurrentTransfers = 3,
   })  : _storage = storage,
         _webDav = webDav,
         _encryption = encryption,
-        _conflictResolver = conflictResolver;
+        _conflictResolver = conflictResolver,
+        _maxConcurrentTransfers = maxConcurrentTransfers <= 0 ? 1 : maxConcurrentTransfers;
 
   final StorageService _storage;
   final WebDavService _webDav;
   final EncryptionService _encryption;
   final ConflictResolver _conflictResolver;
+  final int _maxConcurrentTransfers;
 
   @override
   Future<SyncResult> performSync({
@@ -50,19 +54,26 @@ class DefaultSyncManager implements SyncManager {
         await _ensureRemoteDirectory(boxName);
 
         final remoteChanges = await _getRemoteChanges(boxName, metadata);
-        final conflictWinnersToUpload = <String, SyncableModel>{};
-        for (final remoteFile in remoteChanges) {
-          final outcome = await _downloadAndMergeItem(
-            boxName: boxName,
-            remotePath: remoteFile.path,
-          );
-          downloaded++;
-          metadata.setEtag(remoteFile.path, remoteFile.etag);
+        final remoteResults = await _runLimited<FileMetadata, _RemoteMergeResult>(
+          remoteChanges,
+          (remoteFile) async {
+            final outcome = await _downloadAndMergeItem(
+              boxName: boxName,
+              remotePath: remoteFile.path,
+            );
+            return _RemoteMergeResult(file: remoteFile, outcome: outcome);
+          },
+        );
 
-          if (outcome.shouldUploadWinner) {
-            conflictWinnersToUpload[outcome.item.id] = outcome.item;
+        final conflictWinnersToUpload = <String, SyncableModel>{};
+        for (final result in remoteResults) {
+          downloaded++;
+          metadata.setEtag(result.file.path, result.file.etag);
+
+          if (result.outcome.shouldUploadWinner) {
+            conflictWinnersToUpload[result.outcome.item.id] = result.outcome.item;
           } else {
-            metadata.recordClock(boxName, outcome.item.lamportClock);
+            metadata.recordClock(boxName, result.outcome.item.lamportClock);
           }
         }
 
@@ -70,24 +81,34 @@ class DefaultSyncManager implements SyncManager {
         final itemsToUpload = <String, SyncableModel>{
           for (final item in localChanges) item.id: item,
           ...conflictWinnersToUpload,
-        }.values;
+        }.values.toList(growable: false);
 
-        for (final item in itemsToUpload) {
-          final remotePath = _remotePathFor(boxName, item.id);
-          final uploadResult = await _uploadItem(
-            boxName: boxName,
-            item: item,
-            etag: metadata.etagFor(remotePath),
-          );
+        final uploadResults = await _runLimited<SyncableModel, _UploadOutcome>(
+          itemsToUpload,
+          (item) async {
+            final remotePath = _remotePathFor(boxName, item.id);
+            final uploadResult = await _uploadItem(
+              boxName: boxName,
+              item: item,
+              etag: metadata.etagFor(remotePath),
+            );
+            return _UploadOutcome(
+              item: item,
+              remotePath: remotePath,
+              result: uploadResult,
+            );
+          },
+        );
 
-          if (uploadResult.success) {
+        for (final outcome in uploadResults) {
+          if (outcome.result.success) {
             uploaded++;
-            metadata.setEtag(remotePath, uploadResult.etag);
-            metadata.recordClock(boxName, item.lamportClock);
+            metadata.setEtag(outcome.remotePath, outcome.result.etag);
+            metadata.recordClock(boxName, outcome.item.lamportClock);
           } else {
             errors.add(
-              'Error uploading $boxName/${item.id}: '
-              '${uploadResult.errorMessage ?? 'unknown error'}',
+              'Error uploading $boxName/${outcome.item.id}: '
+              '${outcome.result.errorMessage ?? 'unknown error'}',
             );
           }
         }
@@ -132,9 +153,8 @@ class DefaultSyncManager implements SyncManager {
     required SyncableModel item,
     String? etag,
   }) async {
-    final jsonString = jsonEncode(item.toJson());
-    final plainData = utf8.encode(jsonString);
-    final encryptedData = await _encryption.encryptBytes(plainData);
+    final payload = _encodePayload(item.toJson());
+    final encryptedData = await _encryption.encryptBytes(payload);
 
     return _webDav.uploadFile(
       remotePath: _remotePathFor(boxName, item.id),
@@ -163,7 +183,7 @@ class DefaultSyncManager implements SyncManager {
     final downloadResult = await _webDav.downloadFile(remotePath);
     final encryptedData = EncryptedData.fromBytes(downloadResult.data);
     final plainData = await _encryption.decryptBytes(encryptedData);
-    final json = jsonDecode(utf8.decode(plainData));
+    final json = jsonDecode(utf8.decode(_decodePayload(plainData)));
 
     if (json is! Map<String, dynamic>) {
       throw const SyncException('Remote sync payload is not a JSON object.');
@@ -189,6 +209,20 @@ class DefaultSyncManager implements SyncManager {
     );
   }
 
+  List<int> _encodePayload(Map<String, Object?> json) {
+    return gzip.encode(utf8.encode(jsonEncode(json)));
+  }
+
+  List<int> _decodePayload(List<int> payload) {
+    try {
+      return gzip.decode(payload);
+    } catch (_) {
+      // Backward compatibility: old sync files were encrypted JSON bytes without
+      // compression. Keep accepting them during migration.
+      return payload;
+    }
+  }
+
   SyncableModel _deserializeItem(String boxName, Map<String, dynamic> json) {
     return switch (boxName) {
       StorageBoxNames.todos => TodoItem.fromJson(json),
@@ -211,6 +245,40 @@ class DefaultSyncManager implements SyncManager {
   }
 
   String _remotePathFor(String boxName, String itemId) => '$boxName/$itemId.enc';
+
+  Future<List<R>> _runLimited<T, R>(
+    List<T> inputs,
+    Future<R> Function(T input) worker,
+  ) async {
+    if (inputs.isEmpty) {
+      return <R>[];
+    }
+
+    final results = List<R?>.filled(inputs.length, null);
+    var nextIndex = 0;
+
+    Future<void> runWorker() async {
+      while (true) {
+        final currentIndex = nextIndex;
+        if (currentIndex >= inputs.length) {
+          return;
+        }
+        nextIndex++;
+        results[currentIndex] = await worker(inputs[currentIndex]);
+      }
+    }
+
+    final workerCount = inputs.length < _maxConcurrentTransfers
+        ? inputs.length
+        : _maxConcurrentTransfers;
+    await Future.wait([
+      for (var index = 0; index < workerCount; index++) runWorker(),
+    ]);
+
+    return [
+      for (final result in results) result as R,
+    ];
+  }
 
   Future<_SyncMetadata> _loadMetadata() async {
     final stored = await _storage.getItemById<Map<dynamic, dynamic>>(
@@ -269,6 +337,28 @@ class _MergeOutcome {
 
   final SyncableModel item;
   final bool shouldUploadWinner;
+}
+
+class _RemoteMergeResult {
+  const _RemoteMergeResult({
+    required this.file,
+    required this.outcome,
+  });
+
+  final FileMetadata file;
+  final _MergeOutcome outcome;
+}
+
+class _UploadOutcome {
+  const _UploadOutcome({
+    required this.item,
+    required this.remotePath,
+    required this.result,
+  });
+
+  final SyncableModel item;
+  final String remotePath;
+  final UploadResult result;
 }
 
 class _SyncMetadata {
