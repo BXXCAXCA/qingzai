@@ -10,7 +10,7 @@ class DefaultPlatformService implements PlatformService {
     DeviceIdStore? deviceIdStore,
     PlatformSnapshot? platformSnapshot,
     Uuid? uuid,
-  })  : _deviceIdStore = deviceIdStore ?? const SecureDeviceIdStore(),
+  })  : _deviceIdStore = deviceIdStore ?? SecureDeviceIdStore(),
         _platformSnapshot = platformSnapshot ?? PlatformSnapshot.current(),
         _uuid = uuid ?? const Uuid();
 
@@ -94,7 +94,7 @@ abstract interface class DeviceIdStore {
 }
 
 class SecureDeviceIdStore implements DeviceIdStore {
-  const SecureDeviceIdStore({FlutterSecureStorage? storage})
+  SecureDeviceIdStore({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
@@ -127,12 +127,18 @@ class PlatformSnapshot {
   final String hostname;
 
   QingZaiPlatform get qingZaiPlatform {
-    final normalized = operatingSystem.toLowerCase();
+    final normalized = operatingSystem.toLowerCase().replaceAll('_', '-');
     return switch (normalized) {
       'android' => QingZaiPlatform.android,
       'ios' => QingZaiPlatform.ios,
       'windows' => QingZaiPlatform.windows,
-      'ohos' || 'harmonyos' || 'harmony' => QingZaiPlatform.harmonyPhone,
+      'ohos' ||
+      'harmony' ||
+      'harmonyos' ||
+      'harmony-phone' ||
+      'harmonyos-phone' => QingZaiPlatform.harmonyPhone,
+      'harmony-tablet' || 'harmonyos-tablet' => QingZaiPlatform.harmonyTablet,
+      'harmony-watch' || 'harmonyos-watch' => QingZaiPlatform.harmonyWatch,
       _ => QingZaiPlatform.unknown,
     };
   }
