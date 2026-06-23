@@ -25,7 +25,13 @@ class ConnectivityPlusMonitor implements ConnectivityMonitor {
         .distinct();
   }
 
-  bool _isOnlineResult(ConnectivityResult result) {
-    return result != ConnectivityResult.none;
+  bool _isOnlineResult(Object result) {
+    if (result is ConnectivityResult) {
+      return result != ConnectivityResult.none;
+    }
+    if (result is Iterable<ConnectivityResult>) {
+      return result.any((item) => item != ConnectivityResult.none);
+    }
+    return false;
   }
 }
