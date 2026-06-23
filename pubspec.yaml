@@ -18,15 +18,11 @@ dependencies:
   dio: ^5.3.3
   http: ^1.1.0
   multicast_dns: ^0.3.2
-  network_info_plus: ^4.1.0
-  device_info_plus: ^9.1.0
   path_provider: ^2.1.1
   path: ^1.8.3
   uuid: ^4.1.0
   json_annotation: ^4.8.1
-  connectivity_plus: ^6.1.0
   flutter_secure_storage: ^9.0.0
-  package_info_plus: ^5.0.1
   url_launcher: ^6.2.1
 
 dev_dependencies:
