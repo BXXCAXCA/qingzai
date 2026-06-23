@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qingzai/core/services/secure_version_service.dart';
 import 'package:qingzai/core/services/version_service.dart';
@@ -23,7 +23,7 @@ void main() {
 
     test('checks, downloads, and verifies a self-hosted update package', () async {
       final bytes = utf8.encode('qingzai update package');
-      final checksum = sha256.convert(bytes).toString();
+      final checksum = crypto.sha256.convert(bytes).toString();
       final delegate = _MemoryVersionService(
         downloadDirectory: tempDir,
         packageBytes: bytes,
@@ -123,12 +123,12 @@ class _MemoryVersionService implements VersionService {
   }
 
   @override
-  Future<bool> verifyLocalFile(String localPath, String sha256) async {
+  Future<bool> verifyLocalFile(String localPath, String expectedSha256) async {
     final file = File(localPath);
     if (!await file.exists()) {
       return false;
     }
-    return sha256.convert(await file.readAsBytes()).toString() == sha256;
+    return crypto.sha256.convert(await file.readAsBytes()).toString() == expectedSha256;
   }
 
   @override
