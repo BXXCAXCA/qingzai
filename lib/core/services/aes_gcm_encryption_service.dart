@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:pointycastle/export.dart';
 
 import '../errors/app_exception.dart';
+import '../security/password_policy.dart';
 import 'encryption_service.dart';
 
 /// AES-256-GCM based encryption service.
@@ -16,9 +17,11 @@ final class AesGcmEncryptionService implements EncryptionService {
   AesGcmEncryptionService({
     this.pbkdf2Iterations = 100000,
     List<int>? salt,
-  }) : _salt = Uint8List.fromList(
+    PasswordPolicy passwordPolicy = const PasswordPolicy(),
+  })  : _salt = Uint8List.fromList(
           salt ?? utf8.encode('qingzai.encryption.v1'),
-        );
+        ),
+        _passwordPolicy = passwordPolicy;
 
   static const int keyLengthBytes = 32;
   static const int ivLengthBytes = 12;
@@ -27,6 +30,7 @@ final class AesGcmEncryptionService implements EncryptionService {
 
   final int pbkdf2Iterations;
   final Uint8List _salt;
+  final PasswordPolicy _passwordPolicy;
   Uint8List? _key;
 
   @override
@@ -34,6 +38,7 @@ final class AesGcmEncryptionService implements EncryptionService {
     if (secret.trim().isEmpty) {
       throw const AuthenticationException('Encryption secret cannot be empty.');
     }
+    _passwordPolicy.validate(secret);
 
     final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
       ..init(
