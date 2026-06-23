@@ -28,7 +28,7 @@ void main() {
   });
 
   group('HiveStorageService', () {
-    test('opens all configured boxes during initialization', () async {
+    test('lazily opens configured boxes on first access', () async {
       for (final boxName in StorageBoxNames.allBoxes) {
         expect(await storage.getItemCount(boxName), 0);
       }
@@ -72,6 +72,64 @@ void main() {
         loaded.map((todo) => todo.title),
         containsAll(['First', 'Second']),
       );
+    });
+
+    test('returns paged items without materializing callers into a larger list', () async {
+      await storage.saveItemsBatch(StorageBoxNames.todos, [
+        _todo(id: '10111111-1111-4111-8111-111111111111', title: 'First'),
+        _todo(id: '10222222-2222-4222-8222-222222222222', title: 'Second'),
+        _todo(id: '10333333-3333-4333-8333-333333333333', title: 'Third'),
+      ]);
+
+      final page = await storage.getItemsPage<TodoItem>(
+        StorageBoxNames.todos,
+        offset: 1,
+        limit: 1,
+      );
+
+      expect(page, hasLength(1));
+      expect(page.single.title, 'Second');
+    });
+
+    test('returns syncable changes sorted by Lamport clock and id', () async {
+      final older = _todo(
+        id: '21111111-1111-4111-8111-111111111111',
+        title: 'Older',
+        lamportClock: 1,
+      );
+      final changed = _todo(
+        id: '22222222-2222-4222-8222-222222222222',
+        title: 'Changed',
+        lamportClock: 3,
+      );
+      final changedTie = _todo(
+        id: '23333333-3333-4333-8333-333333333333',
+        title: 'Changed tie',
+        lamportClock: 3,
+      );
+
+      await storage.saveItemsBatch(StorageBoxNames.todos, [changedTie, older, changed]);
+
+      final changes = await storage.getSyncableChangesAfter<TodoItem>(
+        StorageBoxNames.todos,
+        lamportClock: 1,
+      );
+
+      expect(changes.map((todo) => todo.title), ['Changed', 'Changed tie']);
+    });
+
+    test('reads a subset by id', () async {
+      final first = _todo(id: '31111111-1111-4111-8111-111111111111', title: 'First');
+      final second = _todo(id: '32222222-2222-4222-8222-222222222222', title: 'Second');
+      await storage.saveItemsBatch(StorageBoxNames.todos, [first, second]);
+
+      final loaded = await storage.getItemsByIds<TodoItem>(
+        StorageBoxNames.todos,
+        [second.id],
+      );
+
+      expect(loaded.keys, [second.id]);
+      expect(loaded[second.id]!.title, 'Second');
     });
 
     test('deleteItem removes an existing item and reports whether it existed', () async {
@@ -130,7 +188,11 @@ void main() {
   });
 }
 
-TodoItem _todo({required String id, String title = 'Write storage service'}) {
+TodoItem _todo({
+  required String id,
+  String title = 'Write storage service',
+  int lamportClock = 0,
+}) {
   final now = DateTime.utc(2026, 1, 1, 12);
   return TodoItem(
     id: id,
@@ -138,5 +200,6 @@ TodoItem _todo({required String id, String title = 'Write storage service'}) {
     createdAt: now,
     lastModified: now,
     deviceId: 'device-a',
+    lamportClock: lamportClock,
   );
 }
