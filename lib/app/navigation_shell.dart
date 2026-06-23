@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../features/clipboard/presentation/clipboard_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/lan_transfer/presentation/lan_transfer_screen.dart';
+import '../features/memos/presentation/memo_screen.dart';
 import '../features/notes/presentation/notes_screen.dart';
 import '../features/pomodoro/presentation/pomodoro_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
@@ -44,8 +45,15 @@ class _NavigationShellState extends State<NavigationShell> {
       label: '笔记',
       icon: Icons.sticky_note_2_outlined,
       selectedIcon: Icons.sticky_note_2,
-      title: '桌面笔记与备忘录',
+      title: '桌面笔记',
       screen: NotesScreen(),
+    ),
+    _QingZaiDestination(
+      label: '备忘',
+      icon: Icons.edit_note_outlined,
+      selectedIcon: Icons.edit_note,
+      title: '备忘录',
+      screen: MemoScreen(),
     ),
     _QingZaiDestination(
       label: '番茄钟',
