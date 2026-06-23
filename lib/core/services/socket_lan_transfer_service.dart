@@ -298,7 +298,7 @@ class SocketLanTransferService implements LanTransferService {
         receivedBytes += accepted;
       }
 
-      if (header != null && receivedBytes >= expectedSize) {
+      if (receivedBytes >= expectedSize) {
         break;
       }
     }
