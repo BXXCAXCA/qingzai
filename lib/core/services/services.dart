@@ -7,6 +7,7 @@ export 'hive_model_adapters.dart';
 export 'hive_storage_service.dart';
 export 'lan_transfer_service.dart';
 export 'platform_service.dart';
+export 'secure_version_service.dart';
 export 'socket_lan_transfer_service.dart';
 export 'storage_service.dart';
 export 'version_service.dart';
