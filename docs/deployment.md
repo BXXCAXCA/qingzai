@@ -112,11 +112,11 @@ HarmonyOS remains a verification task. Before release preparation:
 Use `config/update_manifest.example.json` as the starting point. Every self-hosted package should include:
 
 - `version`
-- `publishedAt`
-- platform-specific package URL
+- `releaseDate`
+- platform-specific package URL in `downloadUrl`
 - `sha256`
-- package size
-- optional patch graph
+- package size in `size`
+- optional patch graph using `patchUrl`
 
 All URLs used by `SecureVersionService` must use HTTPS.
 
