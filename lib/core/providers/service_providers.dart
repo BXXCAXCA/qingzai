@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../errors/error_messages.dart';
 import '../offline/offline.dart';
 import '../services/aes_gcm_encryption_service.dart';
+import '../services/default_platform_service.dart';
 import '../services/dio_version_service.dart';
 import '../services/dio_webdav_service.dart';
 import '../services/encryption_service.dart';
@@ -42,7 +43,7 @@ final versionServiceProvider = Provider<VersionService>((ref) {
 });
 
 final platformServiceProvider = Provider<PlatformService>((ref) {
-  throw UnimplementedError('PlatformService implementation is not registered.');
+  return DefaultPlatformService();
 });
 
 final connectivityMonitorProvider = Provider<ConnectivityMonitor>((ref) {
