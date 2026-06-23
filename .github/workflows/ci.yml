@@ -28,10 +28,46 @@ jobs:
         run: flutter pub get
 
       - name: Analyze source
-        run: flutter analyze
+        run: |
+          flutter analyze > analyze.log 2>&1
+
+      - name: Upload analyze log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyze-log
+          path: analyze.log
 
       - name: Run unit, widget, and service integration tests
-        run: flutter test
+        run: |
+          flutter test > test.log 2>&1
 
-      - name: Run app smoke integration tests
-        run: flutter test integration_test
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: test.log
+
+      - name: Run app smoke integration tests when a device is available
+        run: |
+          set +e
+          flutter test integration_test > integration-test.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -q "No supported devices connected" integration-test.log; then
+            echo "::warning::Skipping device-level integration_test because this CI runner has no supported Flutter device. Run flutter test integration_test on a configured desktop/mobile runner before release."
+            exit 0
+          fi
+          cat integration-test.log
+          exit "$status"
+
+      - name: Upload integration test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-log
+          path: integration-test.log

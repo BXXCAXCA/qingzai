@@ -61,9 +61,13 @@ void main() {
         if (request.method == 'PROPFIND') {
           return ResponseBody.fromString(_emptyMultiStatusXml, 207);
         }
-        return ResponseBody.fromString('', 201, headers: {
-          'etag': ['"remote-etag"'],
-        });
+        return ResponseBody.fromString(
+          '',
+          201,
+          headers: {
+            'etag': ['"remote-etag"'],
+          },
+        );
       });
       final service = DioWebDavService(dio: buildDio(adapter));
       await service.connect(config);
@@ -88,11 +92,15 @@ void main() {
         if (request.method == 'PROPFIND') {
           return ResponseBody.fromString(_emptyMultiStatusXml, 207);
         }
-        return ResponseBody.fromBytes([4, 5, 6], 200, headers: {
-          'etag': ['"abc"'],
-          'content-length': ['3'],
-          'last-modified': ['Wed, 21 Oct 2015 07:28:00 GMT'],
-        });
+        return ResponseBody.fromBytes(
+          [4, 5, 6],
+          200,
+          headers: {
+            'etag': ['"abc"'],
+            'content-length': ['3'],
+            'last-modified': ['Wed, 21 Oct 2015 07:28:00 GMT'],
+          },
+        );
       });
       final service = DioWebDavService(dio: buildDio(adapter));
       await service.connect(config);

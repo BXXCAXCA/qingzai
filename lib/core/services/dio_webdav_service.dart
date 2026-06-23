@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
@@ -77,7 +78,7 @@ class DioWebDavService implements WebDavService {
       final response = await _request(
         method: 'PUT',
         remotePath: remotePath,
-        data: data,
+        data: Uint8List.fromList(data),
         headers: headers,
       );
       final success = response.statusCode == 200 ||

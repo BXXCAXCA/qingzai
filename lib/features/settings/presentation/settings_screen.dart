@@ -118,10 +118,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
-          _SectionCard(
+          const _SectionCard(
             icon: Icons.devices_outlined,
             title: '平台能力',
-            child: const Text('Android / iOS / Windows / 鸿蒙平台适配将在后续平台任务中补齐权限、设备 ID 和能力检测。'),
+            child: Text('Android / iOS / Windows / 鸿蒙平台适配将在后续平台任务中补齐权限、设备 ID 和能力检测。'),
           ),
           Card(
             child: Padding(

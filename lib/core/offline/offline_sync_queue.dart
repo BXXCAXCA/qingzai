@@ -134,9 +134,11 @@ class HiveOfflineSyncQueue implements OfflineSyncQueue {
     final currentTime = now ?? DateTime.now();
     final operations = await _allOperations();
     return operations
-        .where((operation) =>
-            operation.nextRetryAt == null ||
-            !operation.nextRetryAt!.isAfter(currentTime))
+        .where(
+          (operation) =>
+              operation.nextRetryAt == null ||
+              !operation.nextRetryAt!.isAfter(currentTime),
+        )
         .toList(growable: false)
       ..sort((left, right) => left.queuedAt.compareTo(right.queuedAt));
   }
@@ -188,10 +190,14 @@ class HiveOfflineSyncQueue implements OfflineSyncQueue {
     );
 
     return items
-        .where((item) => item.containsKey('boxName') && item.containsKey('queuedAt'))
-        .map((item) => PendingSyncOperation.fromJson(
-              Map<String, Object?>.from(item),
-            ))
+        .where(
+          (item) => item.containsKey('boxName') && item.containsKey('queuedAt'),
+        )
+        .map(
+          (item) => PendingSyncOperation.fromJson(
+            Map<String, Object?>.from(item),
+          ),
+        )
         .toList(growable: false);
   }
 

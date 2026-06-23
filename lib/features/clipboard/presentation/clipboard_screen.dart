@@ -80,7 +80,7 @@ class _ClipboardScreenState extends ConsumerState<ClipboardScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<ClipboardType>(
-                    value: type,
+                    initialValue: type,
                     decoration: const InputDecoration(
                       labelText: '类型',
                       border: OutlineInputBorder(),

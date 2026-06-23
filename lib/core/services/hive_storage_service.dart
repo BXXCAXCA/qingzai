@@ -1,4 +1,3 @@
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../errors/app_exception.dart';
@@ -38,7 +37,11 @@ class HiveStorageService implements StorageService {
 
   Future<void> _initializeInternal() async {
     try {
-      await Hive.initFlutter(storageDirectory);
+      if (storageDirectory == null) {
+        await Hive.initFlutter();
+      } else {
+        Hive.init(storageDirectory);
+      }
       registerQingZaiHiveAdapters();
       _initialized = true;
     } catch (error) {
