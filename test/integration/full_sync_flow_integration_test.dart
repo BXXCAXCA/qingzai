@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io' show gzip;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -252,7 +251,7 @@ class _PassthroughEncryptionService implements EncryptionService {
     final data = encryptedData.ciphertext;
     try {
       return gzip.decode(data);
-    } on FormatException {
+    } catch (_) {
       return data;
     }
   }
