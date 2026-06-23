@@ -51,7 +51,6 @@ void main() {
             operatingSystem: entry.key,
             hostname: '',
           ),
-          uuid: const _FixedUuid('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
         );
 
         expect(service.currentPlatform, entry.value.platform, reason: entry.key);
@@ -62,8 +61,11 @@ void main() {
           entry.value.inAppVersionFlow,
           reason: entry.key,
         );
-        expect(await service.getDeviceId(), 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
-        expect(await service.getDeviceId(), 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+
+        final firstId = await service.getDeviceId();
+        final secondId = await service.getDeviceId();
+        expect(firstId, secondId, reason: entry.key);
+        expect(firstId, matches(RegExp(r'^[0-9a-f-]{36}$')), reason: entry.key);
       }
     });
   });
@@ -93,12 +95,4 @@ class _MemoryDeviceIdStore implements DeviceIdStore {
   Future<void> write({required String key, required String value}) async {
     values[key] = value;
   }
-}
-
-class _FixedUuid {
-  const _FixedUuid(this.value);
-
-  final String value;
-
-  String v4() => value;
 }
