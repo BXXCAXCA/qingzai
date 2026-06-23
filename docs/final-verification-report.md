@@ -8,7 +8,7 @@
 
 当前仓库已经完成轻载 Qing Zai 的 Flutter 工程化 MVP 骨架，包含模型层、核心服务层、同步层、离线支持、局域网传输、更新服务、平台服务、业务 Provider、表现层 UI、安全加固、性能工具、集成测试骨架和发布文档。
 
-由于当前执行环境无法运行 Flutter SDK，且 GitHub Actions 目前没有产生 workflow run，本报告不能声明 `flutter analyze` 或 `flutter test` 已通过。
+由于当前执行环境无法运行 Flutter SDK，且 GitHub Actions 目前没有产生 workflow run，本报告不能声明 `flutter analyze`、`flutter test` 或 `flutter test integration_test` 已通过。
 
 ## 已核查通过
 
@@ -55,6 +55,11 @@
 
 - 开发指南、部署指南、集成测试指南、发布检查清单、更新 manifest 文档、manifest 示例、贡献指南、发布说明模板已补齐。
 - CI 配置存在，并支持 push、PR 和手动 workflow_dispatch。
+- CI 已显式执行：
+  - `flutter pub get`
+  - `flutter analyze`
+  - `flutter test`
+  - `flutter test integration_test`
 
 ## 未能自动验证
 
@@ -74,7 +79,7 @@
 
 发布正式版本前必须完成：
 
-1. 在 GitHub Actions 页面手动触发 Flutter CI，并确认 analyze/test 全部通过。
+1. 在 GitHub Actions 页面手动触发 Flutter CI，并确认 analyze/test/integration_test 全部通过。
 2. 在本地或 CI 生成平台工程：
    ```bash
    flutter create . --platforms=android,ios,windows
@@ -89,7 +94,8 @@
 
 - 工程骨架：完成
 - MVP 功能闭环：源码层面完成
-- 自动化验证：未完成
+- 自动化验证：CI 配置已覆盖 analyze/test/integration_test，但尚未运行确认
 - 服务级集成测试：已补充，待运行确认
+- 应用冒烟测试：已补充，待运行确认
 - 发布准备：文档层面完成，平台构建和真实环境验证未完成
 - 建议发布等级：内部开发预览，不建议作为生产版本发布
