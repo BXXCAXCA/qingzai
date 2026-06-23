@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../errors/error_messages.dart';
 import '../offline/offline.dart';
+import '../security/security.dart';
 import '../services/aes_gcm_encryption_service.dart';
 import '../services/default_platform_service.dart';
 import '../services/dio_version_service.dart';
@@ -12,6 +13,7 @@ import '../services/encryption_service.dart';
 import '../services/hive_storage_service.dart';
 import '../services/lan_transfer_service.dart';
 import '../services/platform_service.dart';
+import '../services/secure_version_service.dart';
 import '../services/socket_lan_transfer_service.dart';
 import '../services/storage_service.dart';
 import '../services/version_service.dart';
@@ -22,8 +24,18 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   return HiveStorageService();
 });
 
+final passwordPolicyProvider = Provider<PasswordPolicy>((ref) {
+  return const PasswordPolicy();
+});
+
+final sensitiveValueRedactorProvider = Provider<SensitiveValueRedactor>((ref) {
+  return const SensitiveValueRedactor();
+});
+
 final encryptionServiceProvider = Provider<EncryptionService>((ref) {
-  return AesGcmEncryptionService();
+  return AesGcmEncryptionService(
+    passwordPolicy: ref.watch(passwordPolicyProvider),
+  );
 });
 
 final webDavServiceProvider = Provider<WebDavService>((ref) {
@@ -39,7 +51,7 @@ final lanTransferServiceProvider = Provider<LanTransferService>((ref) {
 });
 
 final versionServiceProvider = Provider<VersionService>((ref) {
-  return DioVersionService();
+  return SecureVersionService(DioVersionService());
 });
 
 final platformServiceProvider = Provider<PlatformService>((ref) {
