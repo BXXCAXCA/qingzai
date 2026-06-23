@@ -14,6 +14,7 @@ class HiveStorageService implements StorageService {
 
   bool _initialized = false;
   Future<void>? _initializing;
+  final _openingBoxes = <String, Future<Box<dynamic>>>{};
 
   @override
   Future<void> initialize() async {
@@ -39,13 +40,6 @@ class HiveStorageService implements StorageService {
     try {
       await Hive.initFlutter(storageDirectory);
       registerQingZaiHiveAdapters();
-
-      for (final boxName in StorageBoxNames.allBoxes) {
-        if (!Hive.isBoxOpen(boxName)) {
-          await Hive.openBox<dynamic>(boxName);
-        }
-      }
-
       _initialized = true;
     } catch (error) {
       throw StorageException('Failed to initialize local storage.', cause: error);
@@ -76,6 +70,91 @@ class HiveStorageService implements StorageService {
         'Failed to read items from "$boxName" as requested type.',
         cause: error,
       );
+    }
+  }
+
+  Future<List<T>> getItemsPage<T>(
+    String boxName, {
+    int offset = 0,
+    int limit = 50,
+  }) async {
+    if (offset < 0) {
+      throw const ValidationException('Page offset must not be negative.');
+    }
+    if (limit <= 0) {
+      throw const ValidationException('Page limit must be positive.');
+    }
+
+    final box = await _box(boxName);
+    try {
+      return box.values
+          .skip(offset)
+          .take(limit)
+          .cast<T>()
+          .toList(growable: false);
+    } catch (error) {
+      throw StorageException(
+        'Failed to read paged items from "$boxName".',
+        cause: error,
+      );
+    }
+  }
+
+  Future<List<T>> getSyncableChangesAfter<T extends SyncableModel>(
+    String boxName, {
+    required int lamportClock,
+  }) async {
+    final box = await _box(boxName);
+    try {
+      final changed = <T>[];
+      for (final value in box.values) {
+        if (value is T && value.lamportClock > lamportClock) {
+          changed.add(value);
+        }
+      }
+      changed.sort((left, right) {
+        final clockComparison = left.lamportClock.compareTo(right.lamportClock);
+        if (clockComparison != 0) {
+          return clockComparison;
+        }
+        return left.id.compareTo(right.id);
+      });
+      return List<T>.unmodifiable(changed);
+    } catch (error) {
+      throw StorageException(
+        'Failed to read indexed changes from "$boxName".',
+        cause: error,
+      );
+    }
+  }
+
+  Future<Map<String, T>> getItemsByIds<T>(
+    String boxName,
+    Iterable<String> ids,
+  ) async {
+    final box = await _box(boxName);
+    final result = <String, T>{};
+
+    try {
+      for (final id in ids) {
+        validateNonEmptyString(id, 'id');
+        final value = box.get(id);
+        if (value == null) {
+          continue;
+        }
+        if (value is! T) {
+          throw StorageException(
+            'Stored item "$id" in "$boxName" is ${value.runtimeType}, not $T.',
+          );
+        }
+        result[id] = value;
+      }
+      return Map<String, T>.unmodifiable(result);
+    } catch (error) {
+      if (error is StorageException) {
+        rethrow;
+      }
+      throw StorageException('Failed to read indexed ids from "$boxName".', cause: error);
     }
   }
 
@@ -150,14 +229,13 @@ class HiveStorageService implements StorageService {
 
   @override
   Stream<BoxEvent> watchBox(String boxName) {
-    _ensureInitialized();
     _validateBoxName(boxName);
+    return Stream.fromFuture(_box(boxName)).asyncExpand((box) => box.watch());
+  }
 
-    if (!Hive.isBoxOpen(boxName)) {
-      throw StorageException('Storage box "$boxName" is not open.');
-    }
-
-    return Hive.box<dynamic>(boxName).watch();
+  Future<void> compactBox(String boxName) async {
+    final box = await _box(boxName);
+    await box.compact();
   }
 
   Future<void> close() async {
@@ -166,6 +244,7 @@ class HiveStorageService implements StorageService {
     }
 
     await Hive.close();
+    _openingBoxes.clear();
     _initialized = false;
   }
 
@@ -175,16 +254,21 @@ class HiveStorageService implements StorageService {
       await initialize();
     }
 
-    if (!Hive.isBoxOpen(boxName)) {
-      return Hive.openBox<dynamic>(boxName);
+    if (Hive.isBoxOpen(boxName)) {
+      return Hive.box<dynamic>(boxName);
     }
 
-    return Hive.box<dynamic>(boxName);
-  }
+    final opening = _openingBoxes[boxName];
+    if (opening != null) {
+      return opening;
+    }
 
-  void _ensureInitialized() {
-    if (!_initialized) {
-      throw const StorageException('StorageService has not been initialized.');
+    final future = Hive.openBox<dynamic>(boxName);
+    _openingBoxes[boxName] = future;
+    try {
+      return await future;
+    } finally {
+      _openingBoxes.remove(boxName);
     }
   }
 
