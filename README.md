@@ -22,11 +22,12 @@
 - 离线支持骨架（网络状态监听、离线同步队列、指数退避重试、恢复在线后队列重放、存储空间健康检查）
 - Socket LAN 传输服务实现（本机接收端口、设备扫描流、TCP 文件发送/接收、进度流、取消标记、SHA-256 校验）
 - Dio Version 更新服务实现（manifest 检查、商店跳转策略、自托管下载进度、SHA-256 校验、补丁最短路径计算）
+- Default Platform 服务实现（平台检测、设备 ID 安全持久化、设备名、平台能力开关、鸿蒙 phone/tablet/watch 映射）
 - Todo / Clipboard / Notes / Pomodoro / Memo 业务 Provider 实现（Riverpod StateNotifier、CRUD、状态排序、tombstone 删除）
 - Todo / Clipboard / Notes / Memo / Pomodoro / LAN Transfer / Settings 表现层 UI 雏形（列表、表单、状态操作、设置入口）
 - Riverpod 服务注入入口
 - Flutter CI 工作流
-- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试、业务 Provider 测试与离线支持测试
+- 基础 Widget 测试、模型序列化测试、加密服务测试、Hive 存储服务测试、WebDAV 服务测试、同步管理器测试、LAN 传输服务测试、更新服务测试、业务 Provider 测试、离线支持测试与平台服务测试
 
 ## 计划模块
 
