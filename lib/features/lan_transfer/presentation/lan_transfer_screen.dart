@@ -157,13 +157,16 @@ class _LANTransferScreenState extends ConsumerState<LANTransferScreen> {
   Future<void> _startReceiver(LanTransferService service) async {
     await _receiveSubscription?.cancel();
     await service.startDiscovery(deviceName: _deviceNameController.text.trim());
-    _receiveSubscription = service.receiveFiles().listen((file) {
-      setState(() {
-        _status = '收到文件：${file.fileName} (${file.fileSize} bytes)';
-      });
-    }, onError: (Object error) {
-      setState(() => _status = '接收失败：$error');
-    });
+    _receiveSubscription = service.receiveFiles().listen(
+      (file) {
+        setState(() {
+          _status = '收到文件：${file.fileName} (${file.fileSize} bytes)';
+        });
+      },
+      onError: (Object error) {
+        setState(() => _status = '接收失败：$error');
+      },
+    );
     setState(() => _status = '接收服务已启动');
   }
 
