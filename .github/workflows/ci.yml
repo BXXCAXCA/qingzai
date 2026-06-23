@@ -49,9 +49,21 @@ jobs:
           name: test-log
           path: test.log
 
-      - name: Run app smoke integration tests
+      - name: Run app smoke integration tests when a device is available
         run: |
+          set +e
           flutter test integration_test > integration-test.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -q "No supported devices connected" integration-test.log; then
+            echo "::warning::Skipping device-level integration_test because this CI runner has no supported Flutter device. Run flutter test integration_test on a configured desktop/mobile runner before release."
+            exit 0
+          fi
+          cat integration-test.log
+          exit "$status"
 
       - name: Upload integration test log on failure
         if: failure()
