@@ -29,6 +29,7 @@
 - 性能基准工具（样本记录、P95 计算、阈值判定、设备/系统/网络条件元数据）
 - 集成测试骨架（同步全链路、LAN loopback、更新流程、平台兼容性契约、应用壳冒烟）
 - 开发、部署、集成测试、发布检查清单、更新 manifest、最终验证报告与发布说明模板文档
+- 对话交接和上下文恢复文档
 - Riverpod 服务注入入口
 - Flutter CI 工作流（支持 push、PR 和手动 workflow_dispatch）
 - 预览构建工作流（Android debug APK、Linux 预览包、Windows 预览包）
@@ -36,6 +37,11 @@
 
 ## 文档入口
 
+- [上下文恢复索引](docs/context/README.md)
+- [项目上下文总览](docs/context/project-context.md)
+- [原始文档摘要](docs/context/source-docs-summary.md)
+- [开发对话时间线](docs/context/conversation-log.md)
+- [新对话恢复提示词](docs/context/next-chat-prompt.md)
 - [开发指南](docs/development.md)
 - [部署指南](docs/deployment.md)
 - [预览构建指南](docs/preview-builds.md)
